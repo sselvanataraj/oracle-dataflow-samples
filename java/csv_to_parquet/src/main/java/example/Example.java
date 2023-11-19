@@ -16,18 +16,26 @@ import org.apache.spark.sql.SparkSession;
  */
 
 public class Example {
+
+
 	// Customize these before you start.
-	private static String inputPath = "oci://<bucket>@<tenancy>/fake_data.csv";
-	private static String outputPath = "oci://<bucket>@<tenancy>/fake_data.parquet";
+	private static String inputPath = "oci://siva@axmemlgtri2a/geo-data.csv";
+	private static String outputPath = "oci://siva@axmemlgtri2a/csv/geo-data.csv";
 
 	public static void main(String[] args) throws Exception {
+		/*
 		// Get our Spark session.
+		if (args != null && args.length > 1) {
+			inputPath = args[0];
+			outputPath = args[1];
+		}
 		SparkSession spark = DataFlowSparkSession.getSparkSession("Sample App");
-
+		//spark.sparkContext().setLogLevel("DEBUG");
 		Dataset<Row> df = spark.read().csv(inputPath);
 		df.write().mode(SaveMode.Overwrite).format("parquet").save(outputPath);
 		System.out.println("Conversion to Parquet complete.");
 
 		spark.stop();
+	 */
 	}
 }

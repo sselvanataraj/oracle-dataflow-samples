@@ -17,6 +17,7 @@ def main():
 
     # Set up Spark.
     spark_session = get_dataflow_spark_session()
+    spark_session._jsc.sparkConext.setLogLevel("DEBUG")
     sql_context = SQLContext(spark_session)
 
     # Load our data.
