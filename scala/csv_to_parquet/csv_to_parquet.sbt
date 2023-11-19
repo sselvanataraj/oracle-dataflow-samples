@@ -1,10 +1,12 @@
 // Copyright (c) 2016, 2020 Oracle and/or its affiliates.
 name := "csv_to_parquet"
 version := "1.0"
-scalaVersion := "2.12.0"
+scalaVersion := "2.13.12"
+
+val sparkVersion = "3.5.1-SNAPSHOT"
 
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-core" % "3.0.2" % "provided",
-  "org.apache.spark" %% "spark-sql" % "3.0.2" % "provided",
-  "com.oracle.oci.sdk" % "oci-java-sdk-common" % "1.25.2",
+  "org.apache.spark" %% "spark-core" % "3.5.0",
+  "org.apache.spark" %% "spark-sql-api" % "3.5.0",
+ // "org.apache.spark" %% "spark-connect-client-jvm" % "3.5.1-SNAPSHOT" from ("file://Users/siselvan/Documents/spark-3.5.1-SNAPSHOT-bin-3.3.4/jars/spark-connect-client-jvm_2.13-3.5.1-SNAPSHOT.jar"),
 )

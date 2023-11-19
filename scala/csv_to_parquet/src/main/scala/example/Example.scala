@@ -4,22 +4,17 @@
 
 package example
 
-import org.apache.spark.sql.Dataset
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.SparkSession
+
 
 object Example {
   def main(args: Array[String]) = {
+    val spark = SparkSession.builder().remote("sc://localhost").getOrCreate();
+    val logFile = "YOUR_SPARK_HOME/README.md";
+    val logData = spark.read.text(logFile).cache()
+    val numAs = logData.filter(logData.col("a")).count()
+    val numBs = logData.filter(logData.col("b")).count()
 
-    // Customize these.
-    val inputPath = "oci://<bucket>@<tenancy>/fake_data.csv"
-    val outputPath = "oci://<bucket>@<tenancy>/fake_data.parquet"
-
-    // Transform CSV to Parquet.
-    var spark = DataFlowSparkSession.getSparkSession("Sample App")
-    val df = spark.read.option("header", "true").csv(inputPath)
-    df.write.mode(SaveMode.Overwrite).format("parquet").save(outputPath)
-    println(s"Conversion to Parquet complete.")
+    println("Lines with a: %i, lines with b: %i", numAs, numBs);
   }
 }
