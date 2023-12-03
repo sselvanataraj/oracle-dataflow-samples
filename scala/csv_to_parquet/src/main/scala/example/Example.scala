@@ -4,10 +4,11 @@
 
 package example
 
-import org.apache.spark.sql.SparkSession
+//import org.apache.spark.sql.SparkSession
 
 
 object Example {
+  /*
   def main(args: Array[String]) = {
     val spark = SparkSession.builder().remote("sc://localhost").getOrCreate();
     val logFile = "YOUR_SPARK_HOME/README.md";
@@ -17,4 +18,5 @@ object Example {
 
     println("Lines with a: %i, lines with b: %i", numAs, numBs);
   }
+   */
 }

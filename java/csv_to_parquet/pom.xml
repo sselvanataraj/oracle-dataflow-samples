@@ -20,13 +20,12 @@
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-core_2.13</artifactId>
 			<version>${spark.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-connect-client-jvm_2.13</artifactId>
 			<version>3.5.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>/Users/siselvan/Documents/spark-connect-client-jvm_2.13-3.5.1-SNAPSHOT.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.spark</groupId>
@@ -50,11 +49,56 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<executions>
+					<execution>
+						<configuration>
+							<file>/Users/siselvan/Documents/spark-connect-client-jvm_2.13-3.5.1-SNAPSHOT.jar</file>
+							<groupId>org.apache.spark</groupId>
+							<artifactId>spark-connect-client-jvm_2.13</artifactId>
+							<version>3.5.1-SNAPSHOT</version>
+							<packaging>jar</packaging>
+							<generatePom>true</generatePom>
+						</configuration>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.0</version>
 				<configuration>
 					<source>${maven.compiler.source}</source>
 					<target>${maven.compiler.target}</target>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<mainClass>example.SparkConnectExample</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
 				</configuration>
 			</plugin>
 		</plugins>
