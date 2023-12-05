@@ -1,5 +1,9 @@
 package oracle.datahub.spark.model.context;
 
+import oracle.datahub.spark.backend.interpreter.InterpreterContext;
+import oracle.datahub.spark.backend.interpreter.SparkScalaInnerInterpreter;
+import oracle.datahub.spark.backend.scheduler.Scheduler;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,4 +25,6 @@ public class ExecutionContext {
   String clusterContextId;
   String lang; // Default Language
   SparkSession spark;
+  InterpreterContext interpreterContext;
+  Scheduler scheduler;
 }

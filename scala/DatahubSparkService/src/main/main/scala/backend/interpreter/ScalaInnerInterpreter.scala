@@ -1,7 +1,9 @@
-package backend.interpreter
+package  oracle.datahub.spark.backend.interpreter
 
-/*
+
+import oracle.datahub.spark.backend.interpreter.util.InterpreterOutputStream
 import org.apache.spark.SparkConf
+import org.slf4j.{Logger, LoggerFactory}
 
 import java.io.{BufferedReader, File, InputStreamReader, PipedInputStream, PrintWriter, StringWriter}
 import java.net.URLClassLoader
@@ -10,9 +12,6 @@ import scala.tools.nsc.interpreter.Results
 import scala.tools.nsc.interpreter.shell.{Accumulator, Completion, ReplCompletion}
 import scala.jdk.CollectionConverters._
 import scala.tools.nsc.Settings
-*/
-
-/*
 
 /**
  * Inner Scala interpreter.
@@ -23,13 +22,14 @@ import scala.tools.nsc.Settings
 class ScalaInnerInterpreter(conf: SparkConf,
                       interpreterClassLoader: URLClassLoader,
                       interpreterOutputDir: File){
-
+  private lazy val LOGGER: Logger = LoggerFactory.getLogger(getClass)
   val MASTER_PROP_NAME = "spark.master"
   val DEFAULT_MASTER_VALUE = "local[*]"
 
   private var sparkILoop: SparkILoop = _
   private var scalaCompletion: Completion = _
   private val sparkMaster: String = conf.get(MASTER_PROP_NAME, DEFAULT_MASTER_VALUE)
+  private val interpreterOutput = new InterpreterOutputStream(LOGGER)
 
   private def bind(name: String, tpe: String, value: Object, modifier: List[String]): Unit = {
     sparkILoop.beQuietDuring {
@@ -48,7 +48,6 @@ class ScalaInnerInterpreter(conf: SparkConf,
   def getScalaShellClassLoader: ClassLoader = {
     sparkILoop.classLoader
   }
-
 
   def scalaInterpret(code: String): scala.tools.nsc.interpreter.Results.Result =
     sparkILoop.interpret(code)
@@ -118,10 +117,66 @@ class ScalaInnerInterpreter(conf: SparkConf,
     val replOut = new PrintWriter(Console.out, true)
     sparkILoop = new SparkILoop(
       new BufferedReader(new InputStreamReader(new PipedInputStream())),
-      new PrintWriter(new StringWriter()))
+      replOut)
     sparkILoop.run(settings)
     this.scalaCompletion = new ReplCompletion(sparkILoop.intp, new Accumulator)
     Thread.currentThread.setContextClassLoader(sparkILoop.classLoader)
   }
+
+  def interpret(code: String, context: InterpreterContext): InterpreterResult = {
+    val originalOut = System.out
+    val printREPLOutput = context.getStringLocalProperty("printREPLOutput", "true").toBoolean
+
+    def _interpret(code: String): scala.tools.nsc.interpreter.Results.Result = {
+      Console.withOut(interpreterOutput) {
+        System.setOut(Console.out)
+        if (printREPLOutput) {
+          interpreterOutput.setInterpreterOutput(context.out)
+        } else {
+          interpreterOutput.setInterpreterOutput(null)
+        }
+        interpreterOutput.ignoreLeadingNewLinesFromScalaReporter()
+
+        val status = scalaInterpret(code) match {
+          case success@scala.tools.nsc.interpreter.Results.Success =>
+            success
+          case scala.tools.nsc.interpreter.Results.Error =>
+            val errorMsg = new String(interpreterOutput.getInterpreterOutput.toByteArray)
+            if (errorMsg.contains("value toDF is not a member of org.apache.spark.rdd.RDD") ||
+              errorMsg.contains("value toDS is not a member of org.apache.spark.rdd.RDD")) {
+              // prepend "import sqlContext.implicits._" due to
+              // https://issues.scala-lang.org/browse/SI-6649
+              context.out.clear()
+              scalaInterpret("import sqlContext.implicits._\n" + code)
+            } else {
+              scala.tools.nsc.interpreter.Results.Error
+            }
+          case scala.tools.nsc.interpreter.Results.Incomplete =>
+            // add print("") at the end in case the last line is comment which lead to INCOMPLETE
+            scalaInterpret(code + "\nprint(\"\")")
+        }
+        context.out.flush()
+        status
+      }
+    }
+    // reset the java stdout
+    System.setOut(originalOut)
+
+    context.out.write("")
+    val lastStatus = _interpret(code) match {
+      case scala.tools.nsc.interpreter.Results.Success =>
+        InterpreterResult.Code.SUCCESS
+      case scala.tools.nsc.interpreter.Results.Error =>
+        InterpreterResult.Code.ERROR
+      case scala.tools.nsc.interpreter.Results.Incomplete =>
+        InterpreterResult.Code.INCOMPLETE
+    }
+
+    lastStatus match {
+      case InterpreterResult.Code.INCOMPLETE => new InterpreterResult(lastStatus, "Incomplete expression")
+      case _ => new InterpreterResult(lastStatus)
+    }
+  }
+
 }
-*/
+

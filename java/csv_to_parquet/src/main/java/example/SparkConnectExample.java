@@ -1,5 +1,6 @@
 package example;
 
+import com.databricks.backend.daemon.driver.DriverDaemon;
 import org.apache.spark.sql.AnalysisException;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;

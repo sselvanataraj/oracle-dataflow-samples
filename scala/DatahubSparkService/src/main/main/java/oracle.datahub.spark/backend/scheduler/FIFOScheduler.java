@@ -28,7 +28,7 @@ public class FIFOScheduler extends AbstractScheduler {
 
   private ExecutorService executor;
 
-  FIFOScheduler(String name) {
+  public FIFOScheduler(String name) {
     super(name);
     this.executor = Executors.newSingleThreadExecutor(
         new SchedulerThreadFactory("FIFOScheduler-" + name + "-Worker-"));

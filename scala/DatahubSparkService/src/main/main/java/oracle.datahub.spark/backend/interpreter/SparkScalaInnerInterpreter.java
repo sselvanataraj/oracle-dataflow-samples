@@ -1,6 +1,6 @@
 package oracle.datahub.spark.backend.interpreter;
 
-/*
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -10,7 +10,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import backend.interpreter.ScalaInnerInterpreter;
 import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,29 +21,32 @@ import org.apache.spark.sql.SparkSession;
 
 @Getter
 @Setter
-
-*/
-
-public class SparkScalaInterpreter {
-  /*
+public class SparkScalaInnerInterpreter {
   protected ScalaInnerInterpreter innerInterpreter;
   protected SparkConf sparkConf;
   protected SparkContext sc;
   protected JavaSparkContext jsc;
   protected SQLContext sqlContext;
-  protected SparkSession sparkSession;
   protected String sparkVersion;
   protected String sparkUrl;
   protected List<String> depFiles;
   private static File scalaShellOutputDir;
+  protected SparkSession sparkSession;
 
-  public SparkScalaInterpreter() throws IOException {
+  public SparkScalaInnerInterpreter() throws IOException {
     scalaShellOutputDir = Files.createTempDirectory(Paths.get(System.getProperty("java.io.tmpdir")), "spark")
         .toFile();
     scalaShellOutputDir.deleteOnExit();
+    /*
     this.sparkConf = new SparkConf();
-   // this.sparkConf.set("spark.master", "local[2]");
+    this.sparkConf.set("spark.master", "local[2]");
+    */
    // this.sparkConf.set("spark.repl.classdir","/Users/siselvan/github/oracle-dataflow-samples/scala/DatahubSparkService/src/main/main/scala/backend/interpreter/");
+   /*
+    SparkSession session = SparkSession
+        .builder()
+        .appName(request.getName()); */
+
     List<URL> urls = new ArrayList<>();
     URLClassLoader scalaInterpreterClassLoader = new URLClassLoader(urls.toArray(new URL[0]),
         Thread.currentThread().getContextClassLoader());
@@ -61,7 +63,7 @@ public class SparkScalaInterpreter {
 
   public void createSparkContext() {
     SparkSession.Builder builder = SparkSession.builder().config(sparkConf);
-   // sparkSession = builder.getOrCreate();
+    sparkSession = builder.getOrCreate();
     System.out.println("Created Parent Spark session");
     // shared spark context
     sc = sparkSession.sparkContext();
@@ -86,5 +88,22 @@ public class SparkScalaInterpreter {
     innerInterpreter. scalaInterpretQuietly("print(\"\")");
     System.out.println("Thread Context " + Thread.currentThread().getId());
   }
-  */
+
+  public InterpreterResult internalInterpret(String code,InterpreterContext context) {
+    context.out.clear();
+    sc.setJobGroup(buildJobGroupId(context), buildJobDesc(context), false);
+    // set spark.scheduler.pool to null to clear the pool assosiated with this paragraph
+    // sc.setLocalProperty("spark.scheduler.pool", null) will clean the pool
+    sc.setLocalProperty("spark.scheduler.pool", context.getLocalProperties().get("pool"));
+    return innerInterpreter.interpret(code,context);
+  }
+
+  public static String buildJobGroupId(InterpreterContext context) {
+    String uName = "siva";
+    return "datahub|" + uName + "|" + context.getNoteId() + "|" + context.getParagraphId();
+  }
+
+  public static String buildJobDesc(InterpreterContext context) {
+    return "Started by: " + "change_this_user";
+  }
 }

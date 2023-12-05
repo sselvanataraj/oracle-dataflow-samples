@@ -1,5 +1,6 @@
 package oracle.datahub.spark.service;
 
+import oracle.datahub.spark.backend.interpreter.SparkScalaInnerInterpreter;
 import oracle.datahub.spark.backend.scheduler.DriverWatcher;
 import oracle.datahub.spark.model.context.ClusterContext;
 import oracle.datahub.spark.model.ClusterState;
@@ -22,10 +23,11 @@ import org.apache.spark.sql.connect.service.SparkConnectService;
 @Slf4j
 public class ClusterManager {
   public static Map<String, ClusterContext> _clusters = new HashMap<>();
-  ExecutorService executor;
-  public Response createCluster(CreateClusterRequest request) throws IOException, InterruptedException {
+  public Response createCluster(CreateClusterRequest request) throws IOException {
     log.info("Creating new cluster");
     //String clusterId = UUID.randomUUID().toString();
+
+    /* This is spark connect
     String standAloneMaster = "spark://siselvan-mac:7077";
     String local = "local[*]";
     SparkSession session = SparkSession
@@ -40,7 +42,13 @@ public class ClusterManager {
     } catch (Exception ex) {
       log.error("Exception starting spark connect server ", ex);
     }
+    */
+
+    SparkScalaInnerInterpreter interpreter = new SparkScalaInnerInterpreter();
+    interpreter.createSparkContext();
+    SparkSession session = interpreter.getSparkSession();
     String clusterId = session.sessionUUID();
+
     ClusterContext clusterContext = ClusterContext
         .builder()
         .id(clusterId)

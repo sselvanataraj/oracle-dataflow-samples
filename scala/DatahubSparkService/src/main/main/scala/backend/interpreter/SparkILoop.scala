@@ -1,19 +1,18 @@
-package backend.interpreter
+package oracle.datahub.spark.backend.interpreter
 
-/*
+
 import java.io.{BufferedReader, PrintWriter}
 import scala.Predef.{println => _}
 import scala.tools.nsc.{GenericRunnerSettings, Settings}
 import scala.tools.nsc.interpreter.shell.{ILoop, ShellConfig}
 import scala.util.Properties.{javaVersion, javaVmName, versionString}
-*/
 
 /**
  * Scala REPL modified from {@link org.apache.spark.repl.SparkILoop}.
  */
 
 // Todo explore ammonite REPL extension for much more features.
-/*
+
 class SparkILoop(in0: BufferedReader, out: PrintWriter)
   extends ILoop(ShellConfig(new GenericRunnerSettings(_ => ())), in0, out) {
   def this() = this(null, new PrintWriter(Console.out, true))
@@ -31,12 +30,13 @@ class SparkILoop(in0: BufferedReader, out: PrintWriter)
    | |__| | | (_| | | |_  | (_| | | |  | | | |_| | | |_) |
    |_____/   \__,_|  \__|  \__,_| |_|  |_|  \__,_| |_.__/
          """)
-   /* val welcomeMsg = "Using Scala %s (%s, Java %s)".format(
+
+    val welcomeMsg = String.format("Using Scala %s (%s, Java %s)",
       versionString,
       javaVmName,
       javaVersion
     )
-    echo(welcomeMsg) */
+    echo(welcomeMsg)
     echo("Type in expressions to have them evaluated.")
     echo("Type :help for more information.")
   }
@@ -70,5 +70,3 @@ class SparkILoop(in0: BufferedReader, out: PrintWriter)
     true
   }
 }
-
-*/
