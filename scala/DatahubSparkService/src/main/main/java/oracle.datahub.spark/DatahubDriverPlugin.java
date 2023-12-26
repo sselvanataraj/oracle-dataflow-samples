@@ -2,7 +2,6 @@ package oracle.datahub.spark;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.plugin.DriverPlugin;
@@ -13,11 +12,10 @@ import org.apache.spark.sql.connect.service.SparkConnectService;
 
 @Slf4j
 public class DatahubDriverPlugin implements SparkPlugin {
-
   private PluginContext executorContext;
-
   @Override
   public DriverPlugin driverPlugin() {
+
     DriverPlugin driverPlugin = new DriverPlugin() {
       @Override
       public Map<String, String> init(SparkContext sc, PluginContext pluginContext) {
@@ -43,5 +41,4 @@ public class DatahubDriverPlugin implements SparkPlugin {
     };
     return executorPlugin;
   }
-
 }

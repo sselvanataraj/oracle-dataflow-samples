@@ -1,0 +1,5 @@
+package prod
+
+class DataHubMain {
+
+}

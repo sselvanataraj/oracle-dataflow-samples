@@ -17,7 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @Builder
-public class StatementContext extends Job<InterpreterResult> {
+public class StatementContext  {
+  //public class StatementContext extends Job<InterpreterResult> {
   String id;
   String executionContextId;
   String clusterContextId;
