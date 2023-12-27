@@ -9,11 +9,11 @@ import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.Results
 
-class DataHubIMain {
+class ScalaInterpreter {
   var _datahubILoop: DataHubILoop = _
   var sharedSparkContext:SharedSparkContext = _
 
-  def startRepl(): DataHubILoop = {
+  def startInnerRepl(): DataHubILoop = {
     val tmpdir: String = Files.createTempDirectory("repl").toFile.getAbsolutePath
     val tmpDirsLocation: String = System.getProperty("java.io.tmpdir")
     val outputDir = tmpdir
@@ -29,10 +29,12 @@ class DataHubIMain {
     _datahubILoop
   }
 
-  def createSparkContextAndBind(): SparkContext = {
-    sharedSparkContext = SharedSparkContext.getInstance(createSparkConf())
-    bind("sc", "org.apache.spark.SparkContext", sharedSparkContext.getSc, Lists.newArrayList("@transient"))
-    bind("sqlContext", "org.apache.spark.sql.SQLContext", sharedSparkContext.getSqlContext, Lists.newArrayList("@transient"))
+  private def createSparkContextAndBind(): SparkContext = {
+    setSharedSparkContext(createSparkConf())
+    bind("sc", "org.apache.spark.SparkContext",
+      sharedSparkContext.getSc, Lists.newArrayList("@transient"))
+    bind("sqlContext", "org.apache.spark.sql.SQLContext",
+      sharedSparkContext.getSqlContext, Lists.newArrayList("@transient"))
 
     _datahubILoop.interpret("import org.apache.spark.SparkContext._")
     _datahubILoop.interpret("import spark.implicits._")
@@ -45,9 +47,14 @@ class DataHubIMain {
     sharedSparkContext.getSc
   }
 
-  def createSparkConf(): SparkConf = {
-    val master = "local[2]"
-    val sparkConf = new SparkConf().setMaster(master).setAppName("DataHub Shell")
+  private def createSparkConf(): SparkConf = {
+    val localMaster = "local[2]"
+    val master = "spark://siselvan-mac:7077"
+    val sparkConf = new SparkConf()
+      .setMaster(localMaster)
+      .set("spark.driver.cores","1")
+      .set("spark.executor.cores","1")
+      .setAppName("DataHub Shell")
     sparkConf
   }
 
@@ -66,10 +73,18 @@ class DataHubIMain {
     }
   }
 
-  def bind(name: String,
+  private def bind(name: String,
            tpe: String,
            value: Object,
            modifier: java.util.List[String]): Unit =
     bind(name, tpe, value, modifier.asScala.toList)
+
+  def getSharedSparkContext(): SharedSparkContext = {
+    sharedSparkContext
+  }
+
+  private def setSharedSparkContext(sparkConf: SparkConf): Unit = {
+    sharedSparkContext = SharedSparkContext.getInstance(sparkConf)
+  }
 
 }

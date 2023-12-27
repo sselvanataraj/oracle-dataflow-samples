@@ -1,0 +1,8 @@
+{
+  "name": "sample datahub cluster",
+  "accessMode": "shared_session_isolated",
+  "sparkVersion": "3.5.0",
+  "driverNodeType": "Worker.2.1",
+  "workerNodeType": "Worker.2.2",
+  "numWorkers": "2"
+}

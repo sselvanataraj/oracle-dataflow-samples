@@ -1,9 +1,9 @@
-import oracle.datahub.spark.prod.DataHubIMain
+import oracle.datahub.spark.prod.ScalaInterpreter
 
 object DataHubILoopTest {
   def main(args: Array[String]): Unit = {
-    val dh = new DataHubIMain
-    val _intp = dh.startRepl()
+    val dh = new ScalaInterpreter
+    val _intp = dh.startInnerRepl()
     _intp.interpret("""println("====Starting inner interpreter====")""")
     _intp.interpret("""println(sc.version)""")
     _intp.interpret("""println(sqlContext.sparkContext.sparkUser)""")

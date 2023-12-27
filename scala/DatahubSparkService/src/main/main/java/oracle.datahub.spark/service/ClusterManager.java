@@ -7,18 +7,15 @@ import oracle.datahub.spark.model.ClusterState;
 import oracle.datahub.spark.model.request.CreateClusterRequest;
 import oracle.datahub.spark.model.response.CreateClusterResponse;
 import oracle.datahub.spark.model.response.GetClusterResponse;
+import oracle.datahub.spark.prod.ScalaInterpreter;
+import oracle.datahub.spark.prod.SharedSparkContext;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.connect.service.SparkConnectService;
 
 @Slf4j
 public class ClusterManager {
@@ -44,10 +41,10 @@ public class ClusterManager {
     }
     */
 
-    SparkScalaInnerInterpreter interpreter = new SparkScalaInnerInterpreter();
-    interpreter.createSparkContext();
-    SparkSession session = interpreter.getSparkSession();
-    String clusterId = session.sessionUUID();
+    ScalaInterpreter innerInterpreter = new ScalaInterpreter();
+    innerInterpreter.startInnerRepl();
+    SharedSparkContext sharedSparkContext = innerInterpreter.getSharedSparkContext();
+    String clusterId = sharedSparkContext.getSparkSession().sessionUUID();
 
     ClusterContext clusterContext = ClusterContext
         .builder()
@@ -59,7 +56,7 @@ public class ClusterManager {
         .sparkVersion(request.getSparkVersion())
         .numWorkers(request.getNumWorkers())
         .status(ClusterState.CREATING)
-        .parentSparkSession(session)
+        .parentSparkSession(sharedSparkContext.getSparkSession())
         .build();
     _clusters.put(clusterId, clusterContext);
     log.info("Successfully create cluster {} with id {}", clusterContext, clusterId);
@@ -68,7 +65,7 @@ public class ClusterManager {
         .entity(CreateClusterResponse
             .builder()
             .clusterId(clusterId)
-            .clusterUrl(session.sparkContext().uiWebUrl().get())
+            .clusterUrl(sharedSparkContext.getSc().uiWebUrl().get())
             .build())
         .build();
   }

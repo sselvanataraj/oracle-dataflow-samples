@@ -29,6 +29,7 @@ public class ClusterResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Response createCluster(CreateClusterRequest request) throws IOException, InterruptedException {
+    log.info("Thread {}",Thread.currentThread().getId());
     return clusterManager.createCluster(request);
   }
 

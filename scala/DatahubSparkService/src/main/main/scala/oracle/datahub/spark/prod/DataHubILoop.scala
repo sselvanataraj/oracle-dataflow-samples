@@ -55,6 +55,5 @@ class DataHubILoop(in0: BufferedReader, out: PrintWriter)
     })
     true
   }
-  override protected def internalReplAutorunCode(): Seq[String] =
-    Seq.empty
+  override protected def internalReplAutorunCode(): Seq[String] = Seq.empty
 }

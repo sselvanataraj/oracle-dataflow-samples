@@ -1,11 +1,13 @@
 package oracle.datahub.spark.prod;
 
-import lombok.Getter;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SparkSession;
 
+/**
+ * One SharedSparkContext per Cluster.
+ */
 public class SharedSparkContext {
 
   private static volatile SharedSparkContext instance;
