@@ -1,7 +1,6 @@
 package oracle.datahub.spark.prod
 
 import com.google.common.collect.Lists
-import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 
 import java.io.{PrintWriter, StringWriter}
@@ -12,8 +11,7 @@ import scala.tools.nsc.interpreter.Results
 
 class DataHubIMain {
   var _datahubILoop: DataHubILoop = _
-  var sc: SparkContext = _
-  var sqlContext: SQLContext = _
+  var sharedSparkContext:SharedSparkContext = _
 
   def startRepl(): DataHubILoop = {
     val tmpdir: String = Files.createTempDirectory("repl").toFile.getAbsolutePath
@@ -32,10 +30,9 @@ class DataHubIMain {
   }
 
   def createSparkContextAndBind(): SparkContext = {
-    sc = new SparkContext(createSparkConf())
-    sqlContext = new SQLContext(sc)
-    bind("sc", "org.apache.spark.SparkContext", sc, Lists.newArrayList("@transient"))
-    bind("sqlContext", "org.apache.spark.sql.SQLContext", sqlContext, Lists.newArrayList("@transient"))
+    sharedSparkContext = SharedSparkContext.getInstance(createSparkConf())
+    bind("sc", "org.apache.spark.SparkContext", sharedSparkContext.getSc, Lists.newArrayList("@transient"))
+    bind("sqlContext", "org.apache.spark.sql.SQLContext", sharedSparkContext.getSqlContext, Lists.newArrayList("@transient"))
 
     _datahubILoop.interpret("import org.apache.spark.SparkContext._")
     _datahubILoop.interpret("import spark.implicits._")
@@ -45,17 +42,13 @@ class DataHubIMain {
     // print empty string otherwise the last statement's output of this method// print empty string otherwise the last statement's output of this method
     // (aka. import org.apache.spark.sql.functions._) will mix with the output of user code// (aka. import org.apache.spark.sql.functions._) will mix with the output of user code
     _datahubILoop.interpret("print(\"\")")
-    sc
+    sharedSparkContext.getSc
   }
 
   def createSparkConf(): SparkConf = {
     val master = "local[2]"
     val sparkConf = new SparkConf().setMaster(master).setAppName("DataHub Shell")
     sparkConf
-  }
-
-  def getScalaShellClassLoader: ClassLoader = {
-    _datahubILoop.classLoader
   }
 
   def close(): Unit = {
