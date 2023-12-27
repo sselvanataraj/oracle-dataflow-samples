@@ -1,4 +1,4 @@
-package prod
+package oracle.datahub.spark.prod
 
 import java.io.{BufferedReader, PrintWriter}
 import scala.tools.nsc.interpreter.shell.{ILoop, ShellConfig}
